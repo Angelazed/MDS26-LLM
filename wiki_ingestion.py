@@ -4,12 +4,6 @@ Wikipedia ingestion module for F1 RAG project.
 Fetches articles, cleans content, chunks text with overlap, and saves both
 raw articles and chunk-ready records to disk.
 
-Chunk format is designed to feed directly into the embedding + FAISS pipeline
-described in NLP14_1_RAG_Pipeline.ipynb:
-  - each chunk has a numeric `chunk_id` used as the FAISS index row
-  - `combined_text` mirrors the notebook's title + text concatenation pattern
-  - metadata fields (source, article_title, section, url, char_offset) survive
-    into the vector store for citation and faithfulness scoring
 """
 
 import json
@@ -423,4 +417,3 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-    
