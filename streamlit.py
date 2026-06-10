@@ -65,27 +65,24 @@ question = st.text_input(
     "Enter your Formula One question:"
 )
 if st.button("Ask"):
-
     if question.strip() == "":
         st.warning("Please enter a question.")
-
     else:
-
         with st.spinner("Generating answer..."):
-
-            response = answer_question(
-                question,
-                top_k=top_k
-            )
+            response = answer_question(question, top_k=top_k)
 
         st.subheader("Answer")
+        st.write(response.get("answer", "No answer generated."))
 
-        st.write(
-            response.get(
-                "answer",
-                "No answer generated."
-            )
-        )
+        if show_sources:                          # ← indented inside here
+            sources = response.get("sources", [])
+            st.subheader("Sources")
+            if sources:
+                for source in sources:
+                    st.write(f"- {source}")
+            else:
+                st.write("No sources available.")
+        
 
 if show_sources:
 
