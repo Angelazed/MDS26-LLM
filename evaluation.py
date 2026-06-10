@@ -29,42 +29,63 @@ except ImportError:
             "contexts": []
         }
 
-
+"""
+The evaluation dataset was designed to cover multiple Formula One knowledge domains.
+"""
 EVAL_SET = [
     {
-        "question": "What is DRS in Formula 1?",
-        "expected_sources": ["f1_rules.txt"],
-        "ground_truth_answer": "DRS is a system that reduces drag by opening a flap on the rear wing in designated zones."
+        "question": "How many Formula One World Drivers' Championship titles has Max Verstappen won, and during which years?",
+        "expected_sources": ["max_verstappen_chunks.json"],
+        "ground_truth_answer": (
+            "Max Verstappen has won four Formula One World Drivers' Championship "
+            "titles consecutively from 2021 to 2024."
+        ),
+        "evaluation_focus": "Driver achievements and factual accuracy"
     },
+
     {
-        "question": "How does Formula 1 qualifying work?",
-        "expected_sources": ["f1_rules.txt"],
-        "ground_truth_answer": "Formula 1 qualifying determines the starting grid and is typically divided into Q1, Q2, and Q3."
+        "question": "What is the Circuit de Monaco and what major racing events are held there?",
+        "expected_sources": ["circuit_de_monaco_chunks.json"],
+        "ground_truth_answer": (
+            "The Circuit de Monaco is a 3.337 km street circuit located on the "
+            "streets of Monte Carlo and La Condamine in Monaco. It hosts the "
+            "Formula One Monaco Grand Prix, Formula E Monaco ePrix, and the "
+            "Historic Grand Prix of Monaco."
+        ),
+        "evaluation_focus": "Circuit characteristics and event identification"
     },
+
     {
-        "question": "What is an undercut strategy?",
-        "expected_sources": ["f1_strategy.md"],
-        "ground_truth_answer": "An undercut is when a driver pits earlier to use fresher tyres and gain time over a rival."
+        "question": "What type of engines are currently used in Formula One?",
+        "expected_sources": ["formula_one_engines_chunks.json"],
+        "ground_truth_answer": (
+            "Formula One currently uses 1.6-litre four-stroke turbocharged "
+            "90-degree V6 double-overhead camshaft hybrid power units, "
+            "introduced in 2014."
+        ),
+        "evaluation_focus": "Technical specifications retrieval"
     },
+
     {
-        "question": "What is an overcut strategy?",
-        "expected_sources": ["f1_strategy.md"],
-        "ground_truth_answer": "An overcut is when a driver stays out longer than a rival to gain time before pitting."
+        "question": "When was the modern Formula One World Championship established?",
+        "expected_sources": ["history_of_formula_one_chunks.json"],
+        "ground_truth_answer": (
+            "The foundation of modern Formula One began with FIA standardisation "
+            "of rules in 1946, followed by the first World Championship of Drivers "
+            "in 1950."
+        ),
+        "evaluation_focus": "Historical information retrieval"
     },
+
     {
-        "question": "What happens during a safety car period?",
-        "expected_sources": ["f1_rules.txt", "f1_strategy.md"],
-        "ground_truth_answer": "During a safety car period, cars slow down and follow the safety car while track hazards are managed."
-    },
-    {
-        "question": "What is the constructor championship?",
-        "expected_sources": ["f1_history.txt", "f1_rules.txt"],
-        "ground_truth_answer": "The constructor championship ranks teams based on points scored by their drivers."
-    },
-    {
-        "question": "Who has the most wins in the driver statistics dataset?",
-        "expected_sources": ["driver_stats.csv"],
-        "ground_truth_answer": "The answer depends on the driver statistics dataset used."
+        "question": "What are the primary goals of Formula One regulations?",
+        "expected_sources": ["formula_one_regulations_chunks.json"],
+        "ground_truth_answer": (
+            "The primary goals of Formula One regulations are to ensure driver "
+            "safety and fairness in competition, while also promoting "
+            "environmental sustainability."
+        ),
+        "evaluation_focus": "Regulations understanding and synthesis"
     }
 ]
 
