@@ -11,7 +11,6 @@ We decided to implement the following evaluation framework:
 # CONNECTION TO RAG PIPELINE AND EVALUATION QUESTIONS
 
 import time
-import csv
 from statistics import mean
 
 try:
@@ -192,7 +191,7 @@ def evaluate_retrieval_metrics(eval_set=EVAL_SET, top_k=5):
 
 # GENERATION METRICS
 """
-    Produces a CSV-ready table for manual qualitative evaluation.
+    Returns a list of dicts ready for use with pandas DataFrame.
 
     Fill the following fields manually:
     - faithfulness_score_1_to_5
