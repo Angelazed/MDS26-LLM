@@ -75,6 +75,18 @@ for msg in st.session_state.messages:
                     st.markdown(f"{label} — relevance score: `{s['score']}`  \n[Wikipedia]({s['url']})")
 
 # Chat input
+if not st.session_state.messages:
+    st.markdown("### Try asking:")
+    examples = [
+        "What is the DRS system in Formula One?",
+        "Who is Lando Norris and which team does he race for?",
+        "Tell me about the Circuit de Monaco.",
+        "How many championships did Michael Schumacher win?",
+        "What type of engines are used in Formula One?",
+    ]
+    for ex in examples:
+        st.markdown(f"- *{ex}*")
+
 if prompt := st.chat_input("Ask about Formula 1 …"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -109,21 +121,3 @@ if prompt := st.chat_input("Ask about Formula 1 …"):
         {"role": "assistant", "content": answer, "sources": sources}
     )
 
-# ---------------------------------------------------------------------------
-# Suggested questions (shown when chat is empty)
-# ---------------------------------------------------------------------------
-
-if not st.session_state.messages:
-    st.markdown("### Try asking:")
-    examples = [
-        "What is the DRS system in Formula One?",
-        "Who is Lando Norris and which team does he race for?",
-        "Tell me about the Circuit de Monaco.",
-        "How many championships did Michael Schumacher win?",
-        "What type of engines are used in Formula One?",
-    ]
-    cols = st.columns(len(examples))
-    for col, ex in zip(cols, examples):
-        if col.button(ex, use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": ex})
-            st.rerun()
