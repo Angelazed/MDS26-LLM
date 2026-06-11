@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 # Configuration
 # ---------------------------------------------------------------------------
 
-EMBED_MODEL = "all-MiniLM-L6-v2" # local, free, ~80 MB
+EMBED_MODEL = "multi-qa-MiniLM-L6-cos-v1" # local, free, ~80 MB — trained for Q&A retrieval
 CHAT_MODEL = "llama3.1" # pulled via: ollama pull llama3.1
 OLLAMA_BASE = "http://localhost:11434/v1" # Ollama's OpenAI-compatible endpoint
 TOP_K = 5
