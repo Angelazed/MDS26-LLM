@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import pickle
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -231,6 +232,48 @@ def build_pipeline(chunk_dir: Optional[Path] = None) -> F1RAGPipeline:
         logger.info(f"FAISS index already populated ({store.count} vectors). Skipping ingestion.")
 
     return F1RAGPipeline(vector_store=store)
+
+
+# ---------------------------------------------------------------------------
+# Convenience wrappers for evaluation.py
+# ---------------------------------------------------------------------------
+
+# Module-level pipeline instance (lazy-loaded on first call)
+_pipeline: Optional[F1RAGPipeline] = None
+
+
+def _get_pipeline() -> F1RAGPipeline:
+    global _pipeline
+    if _pipeline is None:
+        _pipeline = build_pipeline()
+    return _pipeline
+
+
+def retrieve(query: str, top_k: int = TOP_K) -> list[dict]:
+    """
+    Return top-k retrieved chunks for a query.
+    Each chunk includes a 'source' field with the filename format
+    expected by evaluation.py (e.g. 'max_verstappen_chunks.json').
+    """
+    pipeline = _get_pipeline()
+    passages = pipeline._store.query(query, top_k)
+
+    for p in passages:
+        # Derive filename from article title to match evaluation.py expected_sources
+        slug = re.sub(r"[^\w\-]", "_", p["article_title"]).lower()[:100]
+        p["source"] = f"{slug}_chunks.json"
+
+    return passages
+
+
+def answer_question(query: str, top_k: int = TOP_K) -> dict:
+    """
+    Run the full RAG pipeline and return answer, sources and contexts.
+    Compatible with evaluation.py's expected interface.
+    """
+    pipeline = _get_pipeline()
+    pipeline._top_k = top_k
+    return pipeline.ask(query)
 
 
 # ---------------------------------------------------------------------------
