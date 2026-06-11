@@ -6,4 +6,8 @@ requests>=2.31.0
 # Embeddings & vector store (RAG pipeline)
 sentence-transformers>=2.7.0
 faiss-cpu>=1.8.0
-openai>=1.30.0 # used as Ollama client (OpenAI-compatible API)
+openai>=1.30.0          # used as Ollama client (OpenAI-compatible API)
+
+# Evaluation & notebook
+pandas>=2.0.0
+jupyter>=1.0.0
