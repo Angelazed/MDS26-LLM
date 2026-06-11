@@ -11,3 +11,6 @@ openai>=1.30.0          # used as Ollama client (OpenAI-compatible API)
 # Evaluation & notebook
 pandas>=2.0.0
 jupyter>=1.0.0
+
+# UI
+streamlit>=1.35.0
