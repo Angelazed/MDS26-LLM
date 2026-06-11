@@ -1,4 +1,9 @@
-# Core Ingestion & Processing
+# Data ingestion
 wikipedia-api>=0.6.0
 urllib3>=2.0.0
 requests>=2.31.0
+
+# Embeddings & vector store (RAG pipeline)
+sentence-transformers>=2.7.0
+faiss-cpu>=1.8.0
+openai>=1.30.0 # used as Ollama client (OpenAI-compatible API)
