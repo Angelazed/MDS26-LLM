@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# FAISS index (auto-generated on first run, no need to commit)
+data/faiss_index/
