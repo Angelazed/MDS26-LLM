@@ -10,11 +10,14 @@ We decided to implement the following evaluation framework:
 
 # CONNECTION TO RAG PIPELINE AND EVALUATION QUESTIONS
 
+import re
 import time
 from statistics import mean
 
+import numpy as np
+
 try:
-    from rag_pipeline import retrieve, answer_question
+    from rag_pipeline import retrieve, answer_question, _get_pipeline
 except ImportError:
     def retrieve(query: str, top_k: int = 5):
         print("WARNING: rag_pipeline.retrieve() is not connected yet.")
@@ -190,37 +193,90 @@ def evaluate_retrieval_metrics(eval_set=EVAL_SET, top_k=5):
 
 
 # GENERATION METRICS
-"""
-    Returns a list of dicts ready for use with pandas DataFrame.
 
-    Fill the following fields manually:
-    - faithfulness_score_1_to_5
-    - relevance_score_1_to_5
-    - correctness_score_1_to_5
+def _scale_to_1_5(value: float) -> int:
+    """Scale a 0-1 float to a 1-5 integer score."""
+    return round(1 + max(0.0, min(1.0, value)) * 4)
 
-    Suggested scale:
-    1 = poor
-    3 = good
-    5 = strong
+
+def _faithfulness_score(answer: str, contexts: list[str]) -> int:
     """
+    Faithfulness: fraction of answer tokens that appear in the retrieved contexts.
+    Measures whether the answer is grounded in the context (not hallucinated).
+    """
+    if not answer or not contexts:
+        return 1
+    answer_tokens = set(re.sub(r"[^\w]", " ", answer.lower()).split())
+    context_tokens = set(re.sub(r"[^\w]", " ", " ".join(contexts).lower()).split())
+    if not answer_tokens:
+        return 1
+    overlap = len(answer_tokens & context_tokens) / len(answer_tokens)
+    return _scale_to_1_5(overlap)
+
+
+def _relevance_score(question: str, answer: str) -> int:
+    """
+    Relevance: cosine similarity between question and answer embeddings.
+    Measures whether the answer actually addresses the question.
+    """
+    if not answer:
+        return 1
+    try:
+        embedder = _get_pipeline()._store._embedder
+        vecs = embedder.encode([question, answer], convert_to_numpy=True)
+        q_vec = vecs[0] / (np.linalg.norm(vecs[0]) + 1e-9)
+        a_vec = vecs[1] / (np.linalg.norm(vecs[1]) + 1e-9)
+        similarity = float(np.dot(q_vec, a_vec))
+        return _scale_to_1_5(similarity)
+    except Exception:
+        return 1
+
+
+def _correctness_score(generated: str, ground_truth: str) -> int:
+    """
+    Correctness: cosine similarity between generated answer and ground truth.
+    Measures how close the answer is to the expected answer.
+    """
+    if not generated or not ground_truth:
+        return 1
+    try:
+        embedder = _get_pipeline()._store._embedder
+        vecs = embedder.encode([generated, ground_truth], convert_to_numpy=True)
+        g_vec = vecs[0] / (np.linalg.norm(vecs[0]) + 1e-9)
+        t_vec = vecs[1] / (np.linalg.norm(vecs[1]) + 1e-9)
+        similarity = float(np.dot(g_vec, t_vec))
+        return _scale_to_1_5(similarity)
+    except Exception:
+        return 1
+
+
 def evaluate_generation_metrics(eval_set=EVAL_SET, top_k=5):
+    """
+    Runs generation metrics over the evaluation set.
+
+    Scores (1–5 scale, 5 = best):
+    - faithfulness:  answer grounded in retrieved context (token overlap)
+    - relevance:     answer addresses the question (embedding similarity)
+    - correctness:   answer matches ground truth (embedding similarity)
+    """
     results = []
 
     for item in eval_set:
-        question = item["question"]
+        question    = item["question"]
         ground_truth = item["ground_truth_answer"]
 
         response = answer_question(question, top_k=top_k)
+        answer   = response.get("answer", "")
+        contexts = response.get("contexts", [])
 
         results.append({
-            "question": question,
-            "ground_truth_answer": ground_truth,
-            "generated_answer": response.get("answer", ""),
-            "sources": response.get("sources", []),
-            "faithfulness_score_1_to_5": "",
-            "relevance_score_1_to_5": "",
-            "correctness_score_1_to_5": "",
-            "qualitative_notes": ""
+            "question":                  question,
+            "ground_truth_answer":       ground_truth,
+            "generated_answer":          answer,
+            "sources":                   response.get("sources", []),
+            "faithfulness_score_1_to_5": _faithfulness_score(answer, contexts),
+            "relevance_score_1_to_5":    _relevance_score(question, answer),
+            "correctness_score_1_to_5":  _correctness_score(answer, ground_truth),
         })
 
     return results
@@ -270,8 +326,17 @@ def evaluate_sources_and_citations(eval_set=EVAL_SET, top_k=5):
 
         has_sources = len(returned_sources) > 0
 
+        # returned_sources is a list of dicts with a "title" field
+        # derive filename from title to match expected_sources format
+        import re
+        returned_filenames = [
+            re.sub(r"[^\w\-]", "_", s["title"]).lower()[:100] + "_chunks.json"
+            for s in returned_sources
+            if isinstance(s, dict) and "title" in s
+        ]
+
         contains_expected_source = any(
-            source in returned_sources
+            source in returned_filenames
             for source in expected_sources
         )
 
